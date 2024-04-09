@@ -35,6 +35,9 @@ type Options<T> =  {
   fps: number
 }
 
+const HIDE_CURSOR = "\u001b[?25l"
+const SHOW_CURSOR = "\u001b[?25h"
+
 /**
  * Displays a spinner while waiting for a promise to resolve
  * @param promise The promise to wait for
@@ -58,9 +61,13 @@ export function withSpinner<T>(
     process.stdout.write(`\r${SPINNER.frames[frame]} ${message}`)
     frame = (frame + 1) % SPINNER.frames.length
   }, 1000 / fps)
+  process.stdout.write(HIDE_CURSOR)
 
   return promise
-    .finally(() => clearInterval(interval))
+    .finally(() => {
+      process.stdout.write(SHOW_CURSOR)
+      clearInterval(interval)
+    })
     .then((result) => {
       process.stdout.write(`\r${SPINNER.successFrame} ${successMessage(result).padEnd(message.length)}\n`)
       return result
