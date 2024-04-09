@@ -12,6 +12,7 @@ import {
   maybeRewritePrompt,
 } from "./utils";
 import { getGitDiff } from "./git";
+import { withSpinner } from "./spinner";
 
 const DEFAULT_BRANCH = "main";
 const RACONTEUR_PATH = process.cwd()
@@ -84,8 +85,9 @@ async function getPRDescription(
   prompt: string,
   diffContent: string,
 ): Promise<string> {
-  console.log(chalk.blue("🤖 Generating PR description..."));
-  return await callChatGPTApi(prompt, diffContent);
+  return withSpinner(callChatGPTApi(prompt, diffContent), {
+    message: chalk.blue("🤖 Generating PR description..."),
+  });
 }
 
 async function main() {
