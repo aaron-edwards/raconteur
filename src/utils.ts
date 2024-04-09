@@ -4,6 +4,7 @@ import prompts from "prompts";
 import { CUSTOM_PROMPT_PATH } from "./generatePrDescription";
 import { config } from "dotenv";
 import JiraApi, { JiraIssue } from "./apis/JiraApi";
+import { withSpinner } from "./spinner";
 
 config(); // Load .env file
 
@@ -66,7 +67,15 @@ async function getJiraPrompts(jiraApi: JiraApi):  Promise<JiraIssue | undefined>
   });
 
   if (command === "fetch") {
-    const issues = await jiraApi.getUserIssues();
+    const issues = await withSpinner(
+      jiraApi.getUserIssues(),
+      { 
+        message: chalk.blue("Fetching Jira tickets..."), 
+        success: data => chalk.green(`Fetched ${data.length} Jira tickets`), 
+        fail: chalk.red(`Failed to fetch Jira tickets`)
+      }
+    );
+
     const issueChoices = issues.map((issue) => ({
       title: `[${issue.key}] ${issue.summary}`,
       value: issue,
@@ -106,7 +115,16 @@ async function getJiraPrompts(jiraApi: JiraApi):  Promise<JiraIssue | undefined>
       message: chalk.cyan("Enter the Jira ticket number:"),
     });
 
-    return jiraApi.getIssue(ticket);
+    return withSpinner(
+      jiraApi.getIssue(ticket),
+      { 
+        message: chalk.blue("Fetching Jira ticket..."), 
+        success: data => data 
+          ? chalk.green(`Fetched Jira ticket ${data.key}`) 
+          : chalk.yellow("Jira ticket not found"), 
+        fail: chalk.red("Failed to fetch Jira ticket"),
+      }
+    );
   }
 
   return undefined;

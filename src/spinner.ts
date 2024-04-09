@@ -45,10 +45,10 @@ export function withSpinner<T>(
   promise: Promise<T>, 
   {
     message = "",
-    success = "",
-    fail = "",
+    success = message,
+    fail = message,
     fps = 15
-  }: Partial<Options<T>>
+  }: Partial<Options<T>> = {}
 ): Promise<T> {
   let frame = 0
   const successMessage = typeof success === "function" ? success : () => success
